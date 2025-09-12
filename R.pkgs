@@ -1,0 +1,10 @@
+dplyr
+htmltools
+kableExtra
+knitr
+magrittr
+ncdf4
+raster
+sf
+stars
+tidyr
