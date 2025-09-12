@@ -5,6 +5,7 @@ knitr
 magrittr
 ncdf4
 raster
+rmarkdown
 sf
 stars
 tidyr
