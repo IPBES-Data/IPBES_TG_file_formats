@@ -71,7 +71,10 @@ format:
 #| label: setup
 #| include: false
 
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  eval = FALSE
+)
 ```
 
 ```{r}
@@ -79,9 +82,9 @@ knitr::opts_chunk$set(echo = TRUE)
 #| echo: false
 #| message: false
 
-htmltools::img(src = knitr::image_uri("C:/Users/jkumagai/Documents/IPBES/R/Geoinformatics/Technical Guidelines Series/Spatial File Formats/logo2.png"), 
-               alt = 'logo', 
-               style = 'position:absolute; top:0; right:0; padding:10px; width: 400px; height: 100px;') 
+# htmltools::img(src = knitr::image_uri("C:/Users/jkumagai/Documents/IPBES/R/Geoinformatics/Technical Guidelines Series/Spatial File Formats/logo2.png"), 
+#                alt = 'logo', 
+#                style = 'position:absolute; top:0; right:0; padding:10px; width: 400px; height: 100px;') 
 
 library(magrittr)
 ```
@@ -149,7 +152,11 @@ Additionally, for a complete list of geospatial formats please reference
 [this guide](https://gisgeography.com/gis-formats/).
 
 For each type of spatial data, this guideline will show examples of how to export and read the information. Please download the following data using this code to follow the examples.
-```{r, results = F, warning=F, message = F}
+```{r}
+#| label: download_utah_data
+#| results: 'hide'
+#| warning: false
+#| message: false
 library(magrittr) # for the pipe operator 
 library(sf) # we use sf package to handle vector data 
 
@@ -190,13 +197,17 @@ GeoPackage can be found
 [here](http://opengeospatial.github.io/e-learning/geopackage/text/contents.html).
 
 To export a geopackage the following code and the `sf` package can be used: 
-```{r, results = F}
+```{r}
+#| label: export_geopackage
+#| results: 'hide'
 Utah_sf %>% 
   st_write("Utah_geopackage.gpkg", # Uses the GPKG driver of the GDAL library 
            layer = "Utah")  # Names the layer, as a GeoPackage can have multiple layers 
 ```
 Next, you can read a geopackage using the simple `st_read()` function
-```{r, results = F}
+```{r}
+#| label: read_geopackage
+#| results: 'hide'
 Utah_test <- st_read("Utah_geopackage.gpkg",
                     layer = "Utah")
 ```
@@ -265,7 +276,9 @@ Some drawbacks to using shapefiles are the following:
 -   Does not store geometry of features. e.g. polygons which are next to each other are independent and joining borders are coded as separate line segments, which can result in holes and islands.    
 
 To export and read a shapefile, the `sf` package can also be used.
-```{r, results = F}
+```{r}
+#| label: shapefile_export_read
+#| results: 'hide'
 # Export 
 Utah_sf %>% 
   write_sf("Utah_shapefile.shp")
@@ -302,7 +315,9 @@ on the Sustainability of Digital Formats website which supports the US
 Library of Congress Collections.
 
 To export and read a GeoJSON file the following code can be used. The option `RFC7946 = YES` needs to be used when exporting as it is a more recent and strict standard for GeoJSON. 
-```{r, results = F}
+```{r}
+#| label: geojson_export_read
+#| results: 'hide'
 # Export 
 Utah_sf %>% 
   st_write("Utah.geojson",
@@ -339,11 +354,14 @@ Google.
 
 To export a KML file from R, the following code can be used. First, the projection needs to be checked as KML only supports WGS84.
 ```{r}
+#| label: check_projection_kml
 st_crs(Utah_sf) # check projection
 ```
 
 Next, the same functions `st_write()` and `st_read()` can be used
-```{r, results = F}
+```{r}
+#| label: kml_export_read
+#| results: 'hide'
 # Export 
 st_write(Utah_sf, "Utah.kml", driver = "kml")
 
@@ -383,7 +401,11 @@ More information can be found on
 from the NASA standards and references webpage.
 
 To export a GeoTIFF file, the following code can be used with the `raster` package.
-```{r, results = F, warning=F, message = F}
+```{r}
+#| label: geotiff_export
+#| results: 'hide'
+#| warning: false
+#| message: false
 library(raster)
 
 # Create raster to export
@@ -396,6 +418,7 @@ writeRaster(artwork, "artwork.tif")
 
 To read a GeoTIFF raster, just one line of code is needed
 ```{r}
+#| label: geotiff_read
 raster("artwork.tif")
 ```
 Recently, a format called, [Cloud Optimized
@@ -419,7 +442,10 @@ More information on how the tiles are stored within the GeoPackage can be found 
 Please note that in R, currently support for writing multiband rasters in a GeoPackage is limited. 
 
 To write and read a GeoPackage with a raster layer within it, the following code can be used with the package `stars`
-```{r, warning=F, message = F}
+```{r}
+#| label: geopackage_raster_write_read
+#| warning: false
+#| message: false
 library(stars)
 
 # Writing a Geopackage 
@@ -460,12 +486,14 @@ R is able to read and write netCDF files using the package `ncdf4`. For a full t
 We will now go through a very simple example starting with formatting and exporting NetCDF data adapted from [this guide](https://rstudio-pubs-static.s3.amazonaws.com/119121_996c35aea40145d2a37f8def7c9733f5.html) and finally importing the netCDF we create. We will use the base R volcano dataset. 
 
 ```{r}
+#| label: load_ncdf4_data
 library(ncdf4)
 data(volcano) # store volcano dataset 
 ```
 
 Next, we will store the elevations and grid dimensions in variables.
 ```{r}
+#| label: define_volcano_grid
 z <- 10*volcano      # matrix of elevations
 x <- 100*(1:nrow(z)) # meter spacing (S to N)
 y <- 100*(1:ncol(z)) # meter spacing (E to W)
@@ -474,6 +502,7 @@ y <- 100*(1:ncol(z)) # meter spacing (E to W)
 We will now define the spatial dimensions of the data (lat / long) and then use ncvar_def to define a variable in the netCDF file that will hold the elevation data.
 
 ```{r}
+#| label: define_netcdf_dims_var
 # Define the netcdf coorindate variables
 dim1 <- ncdim_def(name = "EW", units = "meters", vals = as.double(x)) # Defines longitude 
 dim2 <- ncdim_def(name = "SN", units = "meters", vals = as.double(y)) # Defines latitude 
@@ -486,6 +515,7 @@ elevation_def <- ncvar_def("Elevation", units = "meters", list(dim1,dim2), fillv
 
 We will now create the netCDF file and add the variables into the file. At this step, one can add additional metadata such as title, affiliated institution, source, references, etc. 
 ```{r}
+#| label: create_netcdf_and_put
 # create netCDF file and put arrays
 file_volcano <- nc_create("Volcano.nc",list(elevation_def),force_v4=TRUE)
 
@@ -498,11 +528,13 @@ file_volcano
 
 Finally, close the file, which writes the data to disk.
 ```{r}
+#| label: close_netcdf
 nc_close(file_volcano)
 ```
 
 Now, let's move onto opening the netCDF file we just created.
 ```{r}
+#| label: open_netcdf
 # First step is to open the file
 example <- nc_open("Volcano.nc")
 example
@@ -510,6 +542,7 @@ example
 
 Next, we will extract the coordinate variables and elevation variable.
 ```{r}
+#| label: extract_netcdf_vars
 lon <- ncvar_get(example,"EW")               # longitude
 lat <- ncvar_get(example, "SN")              # latitude 
 elevation <- ncvar_get(example, "Elevation") # variable
@@ -517,6 +550,7 @@ elevation <- ncvar_get(example, "Elevation") # variable
 
 Now, one can create a plot from the netcdf file.
 ```{r}
+#| label: plot_netcdf
 filled.contour(lon,lat,elevation, color = terrain.colors, asp = 1)
 ```
   
@@ -546,7 +580,9 @@ packages linked below.
 Finally, here is a table summarizing the recommended r packages for each data type with links to more guides on how to read, convert, and
 write in R between these formats:
 
-```{r echo = FALSE}
+```{r}
+#| label: conversion_table_rpkgs
+#| echo: false
 conversion_table <- data.frame("Data Type" = 
                                  c("GeoPackage (vector)", 
                                    "GeoPackage (raster)",
@@ -602,7 +638,9 @@ the variable. Often with small amounts of data, a wide table can be more
 easily interpreted by humans, while long data is often required for
 running statistical analysis in computer programs. The use of the long format is highly recommended!
   
-```{r echo = FALSE}
+```{r}
+#| label: wide_table_example
+#| echo: false
 example_wide <- data.frame("Experiment" = c(1,2,3),
                            "Minimum_Temperature" = c(8, 15, 21),
                            "Maximum_Temperature" = c(20, 27, 30), 
@@ -619,7 +657,9 @@ example_wide %>%
 
 ```
   
-```{r echo = FALSE}
+```{r}
+#| label: long_table_example
+#| echo: false
 example_long %>% 
   knitr::kable(caption = "Table 4: Example of long data") %>% 
   kableExtra::kable_styling(bootstrap_options = "striped", full_width = FALSE, position = "left")
@@ -649,6 +689,7 @@ software designed for storing or manipulating data.
 To export a table as a CSV file or tab delineated file in R, follow and adapt this code:
 
 ```{r}
+#| label: export_csv_and_tab
 # csv
 write.csv(mtcars,                   # Dataset 
           "mtcars.csv",             # Name of file 
@@ -695,7 +736,9 @@ SVG (Scalable Vector Graphics) is a vector image format, which uses XML text to 
 
 To export a SVG file from R, one can use this base code and add additional arguments such as height, width, point size, to the `svg()` function. 
 
-```{r, results = FALSE}
+```{r}
+#| label: export_svg_example
+#| results: 'hide'
 svg("example_1.svg")                     # SVG graphics device and file name 
 
 plot(rnorm(100), main = "Example Graph") # Plot your graph 
@@ -708,7 +751,9 @@ EPS (Encapsulated PostScript) was created by Adobe in 1992 and is based on Posts
 
 To export a EPS file from R, one can use this base code and add additional arguments to the `postscript()` function.
 
-```{r, results = FALSE}
+```{r}
+#| label: export_eps_example
+#| results: 'hide'
 setEPS()
 postscript("example_2.eps")
 
@@ -722,7 +767,9 @@ dev.off()
 PDFs (Portable Document Files) mentioned previously under the textual files section can also be saved as a vector file. Vector formated PDFs allow one to easily select objects and are preferred to raster formatted PDFs. PDFs can have a mix of vector and raster content, but when exported from R, the graphics will be in vector format. If scanned, the PDF will be in raster format.   
 
 To export a figure as a PDF file from R, one can use this base code and change and add additional arguments to the `pdf()` function.
-```{r, results = FALSE}
+```{r}
+#| label: export_pdf_example
+#| results: 'hide'
 pdf("example_3.pdf",         
     width = 4, height = 4,               # Width and height in inches 
     paper = "A4")                        # Paper size 
@@ -737,7 +784,9 @@ dev.off()
 PNG (Portable Network Graphics) files are a type of raster file format that supports lossless data compression and has no copyright limitations. We generally recommend PNG files for storage and sharing images online. The lossless compression means that there is no loss in quality each time it is opened and saved again. PNG only supports the RGB color space and not CMYK, and does not support animations.
 
 To export a PNG file from R, one can use this based code and change and add additional arguments to the `png()` funciton.
-```{r, results = FALSE}
+```{r}
+#| label: export_png_example
+#| results: 'hide'
 png("example_4.png",
      width = 4, height = 4,
      units = "in",                       # Units in inches 
@@ -752,7 +801,9 @@ dev.off()
 In comparison, JPEG (or JPG) files are raster files that are often used online for displaying images as they are fast to load. It has lossy compression which means each time it is saved it reduces in file size but also in quality. We do not recommend JPEG files for long term storage, except in the case of images which come from e.g. cameras as nothing is gained in converting an original JPEG into a PNG.
 
 To export a jpeg file from R, one can use this base code and change and add additional arguments to the `jpeg()` argument, although we discourage exporting graphs in jpeg. 
-```{r, results = FALSE}
+```{r}
+#| label: export_jpeg_example
+#| results: 'hide'
 jpeg("example_5.jpeg", width = 4, height = 4, units = 'in', res = 300)
 plot(rnorm(100), main = "Example Graph")                               # Plot your graph 
 dev.off()
@@ -762,7 +813,9 @@ dev.off()
 Another option is TIFF. A TIFF (Tagged Image File) is a raster file that also supports lossless compression. We do not recommend using this tile type on websites as it is slow to load due to its large size and has limited browser support, but it is recommended for long term storage or publications. If there are no concerns about losing embeded metadata and tags, in general, it makes sense to convert a TIFF image to PNG as it reduces the size and is lossless. 
 
 To export a TIFF image file from R, one can use this base code and change and add additional arguments to the `tiff()` function, although we discourage exporting graphs in tiff. 
-```{r, results = FALSE}
+```{r}
+#| label: export_tiff_example
+#| results: 'hide'
 tiff("example_6.tiff", width = 4, height = 4, units = "in", res = 300)             
 plot(rnorm(100), main = "Example Graph")                                # Plot your graph 
 dev.off()
